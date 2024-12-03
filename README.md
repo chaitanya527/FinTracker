@@ -20,6 +20,10 @@ The primary goal of the Expense Tracker Application is to provide a straightforw
 4) User-Friendly Design: Clean and responsive interface for seamless usage.
 
 ## 🚀 Demo
+![1](https://github.com/user-attachments/assets/11423ffe-0618-4c03-94d9-7e88c6ce897a)
+
+
+![2](https://github.com/user-attachments/assets/fc9becea-ce32-4a66-8b4d-a282270da2c1)
 
 
 ##  Tech Stack
