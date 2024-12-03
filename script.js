@@ -13,37 +13,6 @@ const balance = document.getElementById("balance");
 const income = document.getElementById("income");
 const expense = document.getElementById("expense");
 
-const ctx = document.getElementById("pieChart").getContext("2d");
-
-const pieChart = new Chart(ctx, {
-  type: 'pie',
-  data: {
-    labels: ['Food', 'Entertainment', 'Rent', 'Investment', 'EMI', 'Salary', 'Others'], // Category labels
-    datasets: [{
-      label: 'Category-wise Expenses & Income',
-      data: [0, 0, 0, 0, 0, 0, 0], // Initially, all data values are 0
-      backgroundColor: [
-        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40', '#E7E9ED', '#CCCCCC'
-      ],
-    }],
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        callbacks: {
-          label: function(tooltipItem) {
-            return `${tooltipItem.label}: ₹${tooltipItem.raw.toFixed(2)}`;
-          },
-        },
-      },
-    },
-  },
-});
-
 form.addEventListener("submit", addTransaction);
 
 function updateTotal() {
@@ -71,16 +40,34 @@ function renderList() {
     return;
   }
 
-  transactions.forEach(({ id, name, amount, date, type, category }) => {
+  transactions.forEach(({ id, name, amount, date, type }) => {
     const sign = "income" === type ? 1 : -1;
 
     const li = document.createElement("li");
 
+    li.innerHTML = `
+      <div class="name">
+        <h4>${name}</h4>
+        <p>${new Date(date).toLocaleDateString()}</p>
+      </div>
+
+      <div class="amount ${type}">
+        <span>${formatter.format(amount * sign)}</span>
+      </div>
     
+      <div class="action">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" onclick="deleteTransaction(${id})">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    `;
 
     list.appendChild(li);
   });
 }
+
+renderList();
+updateTotal();
 
 function deleteTransaction(id) {
   const index = transactions.findIndex((trx) => trx.id === id);
@@ -89,22 +76,19 @@ function deleteTransaction(id) {
   updateTotal();
   saveTransactions();
   renderList();
-  updatePieChart();
 }
 
 function addTransaction(e) {
   e.preventDefault();
 
   const formData = new FormData(this);
-  const type = formData.get("type") === "on" ? "income" : "expense";
 
   transactions.push({
     id: transactions.length + 1,
     name: formData.get("name"),
     amount: parseFloat(formData.get("amount")),
     date: new Date(formData.get("date")),
-    type: type,
-    category: formData.get("category"),
+    type: "on" === formData.get("type") ? "income" : "expense",
   });
 
   this.reset();
@@ -112,37 +96,10 @@ function addTransaction(e) {
   updateTotal();
   saveTransactions();
   renderList();
-  updatePieChart();
 }
 
 function saveTransactions() {
   transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
   localStorage.setItem("transactions", JSON.stringify(transactions));
 }
-
-// Function to update Pie Chart with category-wise data
-function updatePieChart() {
-  // Reset category-wise values
-  const categoryData = {
-    food: 0,
-    entertainment: 0,
-    rent: 0,
-    investment: 0,
-    emi: 0,
-    salary: 0,
-    others: 0,
-  };
-
-  transactions.forEach(({ amount, category, type }) => {
-    const sign = type === "income" ? 1 : -1;
-    categoryData[category] += amount * sign;
-  });
-
-  // Update chart data dynamically
-  pieChart.data.datasets[0].data = Object.values(categoryData);
-  pieChart.update();
-}
-
-updatePieChart();
-renderList();
-updateTotal();
